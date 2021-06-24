@@ -10,7 +10,8 @@ import pandas as pd
 import joblib
 
 ## TODO: Import any additional libraries you need to define a model
-
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import accuracy_score
 
 # Provided model load function
 def model_fn(model_dir):
@@ -41,7 +42,13 @@ if __name__ == '__main__':
     parser.add_argument('--model-dir', type=str, default=os.environ['SM_MODEL_DIR'])
     parser.add_argument('--data-dir', type=str, default=os.environ['SM_CHANNEL_TRAIN'])
     
+    
     ## TODO: Add any additional arguments that you will need to pass into your model
+    parser.add_argument('--max_leaf_nodes', type=int, default=5)
+    parser.add_argument('--max_depth', type=int, default=5)
+    parser.add_argument('--min_samples_leaf', type=int, default=3)
+    parser.add_argument('--min_samples_split', type=int, default=3)    
+
     
     # args holds all passed-in arguments
     args = parser.parse_args()
@@ -57,14 +64,26 @@ if __name__ == '__main__':
     
     ## --- Your code here --- ##
     
+    max_leaf_nodes = args.max_leaf_nodes
+    max_depth= args.max_depth
+    min_samples_leaf = args.min_samples_leaf
+    min_samples_split = args.min_samples_split
 
     ## TODO: Define a model 
-    model = None
-    
+    model = DecisionTreeClassifier(max_leaf_nodes=max_leaf_nodes, 
+                                   max_depth=max_depth, 
+                                   min_samples_leaf=min_samples_leaf, 
+                                   min_samples_split=min_samples_split)
     
     ## TODO: Train the model
+    model.fit(train_x, train_y)
     
-    
+    ## Get accuracy of prediction on the training dataset
+    y_train_pred = model.predict(train_x)
+                 
+    ## Calculate metric and write to cloudwatch log
+    train_accuracy = accuracy_score(train_y, y_train_pred)
+    print('train-accuracy: {};'.format(train_accuracy))
     
     ## --- End of your code  --- ##
     
